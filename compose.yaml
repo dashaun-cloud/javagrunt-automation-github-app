@@ -1,0 +1,33 @@
+services:
+  redis:
+    image: 'redis:latest'
+    ports:
+      - '6379:6379'
+    command:
+      - redis-server
+      - --save
+      - "60"
+      - "1"
+      - --appendonly
+      - "yes"
+    volumes:
+      - redis-data:/data
+    networks:
+      - javagruntautomation
+  redis-insight:
+    image: 'redis/redisinsight:latest'
+    ports:
+      - '5540:5540'
+    depends_on:
+      - redis
+    volumes:
+      - redisinsight-data:/data
+    networks:
+      - javagruntautomation
+
+volumes:
+  redis-data:
+  redisinsight-data:
+
+networks:
+  javagruntautomation:
