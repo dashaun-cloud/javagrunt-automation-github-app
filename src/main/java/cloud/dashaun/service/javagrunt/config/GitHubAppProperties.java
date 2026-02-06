@@ -1,0 +1,97 @@
+package cloud.dashaun.service.javagrunt.config;
+
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
+@ConfigurationProperties(prefix = "javagrunt.github")
+public class GitHubAppProperties {
+	private Long appId;
+	private String webhookSecret;
+	private String privateKeyPem;
+	private String privateKeyPath;
+	private String apiBaseUrl = "https://api.github.com";
+	private String sharedRepoOwner = "dashaun-cloud";
+	private String sharedRepoName = "github-shared-pipelines";
+	private String sharedRepoPath = ".github/workflows/ci.yml";
+	private String targetWorkflowPath = ".github/workflows/ci.yml";
+	private String sharedRepoToken;
+
+	public Long getAppId() {
+		return appId;
+	}
+
+	public void setAppId(Long appId) {
+		this.appId = appId;
+	}
+
+	public String getWebhookSecret() {
+		return webhookSecret;
+	}
+
+	public void setWebhookSecret(String webhookSecret) {
+		this.webhookSecret = webhookSecret;
+	}
+
+	public String getPrivateKeyPem() {
+		return privateKeyPem;
+	}
+
+	public void setPrivateKeyPem(String privateKeyPem) {
+		this.privateKeyPem = privateKeyPem;
+	}
+
+	public String getPrivateKeyPath() {
+		return privateKeyPath;
+	}
+
+	public void setPrivateKeyPath(String privateKeyPath) {
+		this.privateKeyPath = privateKeyPath;
+	}
+
+	public String getApiBaseUrl() {
+		return apiBaseUrl;
+	}
+
+	public void setApiBaseUrl(String apiBaseUrl) {
+		this.apiBaseUrl = apiBaseUrl;
+	}
+
+	public String getSharedRepoOwner() {
+		return sharedRepoOwner;
+	}
+
+	public void setSharedRepoOwner(String sharedRepoOwner) {
+		this.sharedRepoOwner = sharedRepoOwner;
+	}
+
+	public String getSharedRepoName() {
+		return sharedRepoName;
+	}
+
+	public void setSharedRepoName(String sharedRepoName) {
+		this.sharedRepoName = sharedRepoName;
+	}
+
+	public String getSharedRepoPath() {
+		return sharedRepoPath;
+	}
+
+	public void setSharedRepoPath(String sharedRepoPath) {
+		this.sharedRepoPath = sharedRepoPath;
+	}
+
+	public String getTargetWorkflowPath() {
+		return targetWorkflowPath;
+	}
+
+	public void setTargetWorkflowPath(String targetWorkflowPath) {
+		this.targetWorkflowPath = targetWorkflowPath;
+	}
+
+	public String getSharedRepoToken() {
+		return sharedRepoToken;
+	}
+
+	public void setSharedRepoToken(String sharedRepoToken) {
+		this.sharedRepoToken = sharedRepoToken;
+	}
+}
