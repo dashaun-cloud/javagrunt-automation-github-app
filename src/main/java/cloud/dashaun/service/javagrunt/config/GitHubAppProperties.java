@@ -12,6 +12,7 @@ public class GitHubAppProperties {
 	private String sharedRepoOwner = "dashaun-cloud";
 	private String sharedRepoName = "github-shared-pipelines";
 	private String sharedRepoPath = ".github/workflows/ci.yml";
+	private String sharedRepoRef = "main";
 	private String targetWorkflowPath = ".github/workflows/ci.yml";
 	private String sharedRepoToken;
 
@@ -77,6 +78,14 @@ public class GitHubAppProperties {
 
 	public void setSharedRepoPath(String sharedRepoPath) {
 		this.sharedRepoPath = sharedRepoPath;
+	}
+
+	public String getSharedRepoRef() {
+		return sharedRepoRef;
+	}
+
+	public void setSharedRepoRef(String sharedRepoRef) {
+		this.sharedRepoRef = sharedRepoRef;
 	}
 
 	public String getTargetWorkflowPath() {

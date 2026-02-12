@@ -80,11 +80,17 @@ public class GitHubAppJwtProvider {
 	}
 
 	private PrivateKey parsePrivateKey(String pem) {
+		boolean pkcs1 = pem.contains("BEGIN RSA PRIVATE KEY");
 		String normalized = pem
 				.replace("-----BEGIN PRIVATE KEY-----", "")
 				.replace("-----END PRIVATE KEY-----", "")
+				.replace("-----BEGIN RSA PRIVATE KEY-----", "")
+				.replace("-----END RSA PRIVATE KEY-----", "")
 				.replaceAll("\\s", "");
 		byte[] decoded = Base64.getDecoder().decode(normalized);
+		if (pkcs1) {
+			decoded = wrapPkcs1InPkcs8(decoded);
+		}
 		try {
 			PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(decoded);
 			KeyFactory keyFactory = KeyFactory.getInstance("RSA");
@@ -92,6 +98,50 @@ public class GitHubAppJwtProvider {
 		} catch (Exception ex) {
 			throw new IllegalStateException("Failed to parse GitHub App private key", ex);
 		}
+	}
+
+	private byte[] wrapPkcs1InPkcs8(byte[] pkcs1) {
+		// PKCS#8 = SEQUENCE( version, algorithmIdentifier, OCTET STRING(pkcs1) )
+		byte[] oid = new byte[] {0x06, 0x09, 0x2a, (byte) 0x86, 0x48, (byte) 0x86, (byte) 0xf7, 0x0d, 0x01, 0x01, 0x01};
+		byte[] nullParam = new byte[] {0x05, 0x00};
+		byte[] algId = concat(new byte[] {0x30, (byte) (oid.length + nullParam.length)}, oid, nullParam);
+		byte[] pkcs1Octet = concat(new byte[] {0x04}, encodeLength(pkcs1.length), pkcs1);
+		byte[] version = new byte[] {0x02, 0x01, 0x00};
+		byte[] body = concat(version, algId, pkcs1Octet);
+		return concat(new byte[] {0x30}, encodeLength(body.length), body);
+	}
+
+	private byte[] encodeLength(int length) {
+		if (length < 0x80) {
+			return new byte[] {(byte) length};
+		}
+		int temp = length;
+		int numBytes = 0;
+		while (temp > 0) {
+			temp >>= 8;
+			numBytes++;
+		}
+		byte[] result = new byte[1 + numBytes];
+		result[0] = (byte) (0x80 | numBytes);
+		for (int i = numBytes; i > 0; i--) {
+			result[i] = (byte) (length & 0xff);
+			length >>= 8;
+		}
+		return result;
+	}
+
+	private byte[] concat(byte[]... parts) {
+		int total = 0;
+		for (byte[] part : parts) {
+			total += part.length;
+		}
+		byte[] combined = new byte[total];
+		int offset = 0;
+		for (byte[] part : parts) {
+			System.arraycopy(part, 0, combined, offset, part.length);
+			offset += part.length;
+		}
+		return combined;
 	}
 
 	private String base64Url(byte[] data) {

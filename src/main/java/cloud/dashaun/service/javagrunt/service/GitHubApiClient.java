@@ -69,8 +69,9 @@ public class GitHubApiClient {
 		String owner = properties.getSharedRepoOwner();
 		String repo = properties.getSharedRepoName();
 		String path = properties.getSharedRepoPath();
+		String ref = properties.getSharedRepoRef();
 		HttpRequest.Builder builder = HttpRequest.newBuilder()
-				.uri(apiUri("/repos/" + owner + "/" + repo + "/contents/" + path))
+				.uri(apiUri("/repos/" + owner + "/" + repo + "/contents/" + path + "?ref=" + ref))
 				.header("Accept", "application/vnd.github.raw");
 		String token = properties.getSharedRepoToken();
 		if (token != null && !token.isBlank()) {
@@ -135,8 +136,8 @@ public class GitHubApiClient {
 	private JsonNode sendJson(HttpRequest request) {
 		HttpResponse<String> response = send(request);
 		if (response.statusCode() < 200 || response.statusCode() >= 300) {
-			log.warn("GitHub API error {} for {}", response.statusCode(), request.uri());
-			throw new IllegalStateException("GitHub API error: " + response.statusCode());
+			logApiError(request, response);
+			throw new IllegalStateException("GitHub API error: " + response.statusCode() + " " + truncate(response.body()));
 		}
 		try {
 			return objectMapper.readTree(response.body());
@@ -151,8 +152,8 @@ public class GitHubApiClient {
 			return Optional.empty();
 		}
 		if (response.statusCode() < 200 || response.statusCode() >= 300) {
-			log.warn("GitHub API error {} for {}", response.statusCode(), request.uri());
-			throw new IllegalStateException("GitHub API error: " + response.statusCode());
+			logApiError(request, response);
+			throw new IllegalStateException("GitHub API error: " + response.statusCode() + " " + truncate(response.body()));
 		}
 		try {
 			return Optional.of(objectMapper.readTree(response.body()));
@@ -168,6 +169,22 @@ public class GitHubApiClient {
 			Thread.currentThread().interrupt();
 			throw new IllegalStateException("Failed to call GitHub API", ex);
 		}
+	}
+
+	private void logApiError(HttpRequest request, HttpResponse<String> response) {
+		String body = truncate(response.body());
+		log.warn("GitHub API error {} for {} body={}", response.statusCode(), request.uri(), body);
+	}
+
+	private String truncate(String value) {
+		if (value == null) {
+			return "";
+		}
+		int limit = 500;
+		if (value.length() <= limit) {
+			return value;
+		}
+		return value.substring(0, limit) + "...";
 	}
 
 	public String buildBranchName() {

@@ -3,6 +3,7 @@ package cloud.dashaun.service.javagrunt;
 import cloud.dashaun.service.javagrunt.config.GitHubAppProperties;
 import cloud.dashaun.service.javagrunt.service.GitHubApiClient;
 import cloud.dashaun.service.javagrunt.service.InstallationService;
+import cloud.dashaun.service.javagrunt.store.OrgRegistryStore;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.ObjectMapper;
@@ -20,15 +21,17 @@ class InstallationServiceTest {
 	private GitHubAppProperties properties;
 	private InstallationService service;
 	private ObjectMapper mapper;
+	private OrgRegistryStore orgRegistryStore;
 
 	@BeforeEach
 	void setUp() {
 		gitHubApiClient = mock(GitHubApiClient.class);
+		orgRegistryStore = mock(OrgRegistryStore.class);
 		properties = new GitHubAppProperties();
 		properties.setSharedRepoOwner("dashaun-cloud");
 		properties.setSharedRepoName("github-shared-pipelines");
 		properties.setTargetWorkflowPath(".github/workflows/ci.yml");
-		service = new InstallationService(gitHubApiClient, properties);
+		service = new InstallationService(gitHubApiClient, properties, orgRegistryStore);
 		mapper = new ObjectMapper();
 	}
 
@@ -45,6 +48,7 @@ class InstallationServiceTest {
 
 		service.handleInstallation(payload);
 
+		verify(orgRegistryStore).addOrg("org");
 		verify(gitHubApiClient).createBranch("org", "demo", "javagrunt/ci-branch", "sha", "token");
 		verify(gitHubApiClient).putFile(
 				"org",
@@ -74,6 +78,7 @@ class InstallationServiceTest {
 
 		service.handleInstallation(payload);
 
+		verify(orgRegistryStore).addOrg("org");
 		verify(gitHubApiClient, never()).createBranch("org", "demo", "javagrunt/ci-branch", "sha", "token");
 		verify(gitHubApiClient, never()).putFile(
 				"org",
@@ -99,6 +104,7 @@ class InstallationServiceTest {
 
 		service.handleInstallation(payload);
 
+		verify(orgRegistryStore).setOrgStatus("org", OrgRegistryStore.OrgStatus.DELETED);
 		verifyNoInteractions(gitHubApiClient);
 	}
 
@@ -127,7 +133,9 @@ class InstallationServiceTest {
 	private ObjectNode installationPayload(String action) {
 		ObjectNode root = mapper.createObjectNode();
 		root.put("action", action);
-		root.putObject("installation").put("id", 42L);
+		ObjectNode installation = root.putObject("installation");
+		installation.put("id", 42L);
+		installation.putObject("account").put("login", "org");
 		ArrayNode repos = root.putArray("repositories");
 		ObjectNode repo = repos.addObject();
 		repo.put("name", "demo");
