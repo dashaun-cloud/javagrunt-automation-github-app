@@ -40,6 +40,9 @@ public class InstallationService {
 		List<RepoRef> repos = extractRepos(payload);
 		if (!accountLogin.isBlank()) {
 			orgRegistryStore.addOrg(accountLogin);
+			if (installationId > 0) {
+				orgRegistryStore.setInstallationId(accountLogin, installationId);
+			}
 		}
 		if (repos.isEmpty()) {
 			log.warn("No repositories found in installation payload");

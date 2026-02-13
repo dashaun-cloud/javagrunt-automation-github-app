@@ -15,6 +15,11 @@ public class GitHubAppProperties {
 	private String sharedRepoRef = "main";
 	private String targetWorkflowPath = ".github/workflows/ci.yml";
 	private String sharedRepoToken;
+	private String advisorPath = "/usr/local/bin/advisor";
+	private String advisorWorkspace = "./tmp/javagrunt";
+	private int prCleanupDays = 30;
+	private String advisorMappingGitUri = "https://github.com/dashaun-tanzu/advisor-mappings.git";
+	private String advisorMappingGitPath = "mappings/";
 
 	public Long getAppId() {
 		return appId;
@@ -102,5 +107,45 @@ public class GitHubAppProperties {
 
 	public void setSharedRepoToken(String sharedRepoToken) {
 		this.sharedRepoToken = sharedRepoToken;
+	}
+
+	public String getAdvisorPath() {
+		return advisorPath;
+	}
+
+	public void setAdvisorPath(String advisorPath) {
+		this.advisorPath = advisorPath;
+	}
+
+	public String getAdvisorWorkspace() {
+		return advisorWorkspace;
+	}
+
+	public void setAdvisorWorkspace(String advisorWorkspace) {
+		this.advisorWorkspace = advisorWorkspace;
+	}
+
+	public int getPrCleanupDays() {
+		return prCleanupDays;
+	}
+
+	public void setPrCleanupDays(int prCleanupDays) {
+		this.prCleanupDays = prCleanupDays;
+	}
+
+	public String getAdvisorMappingGitUri() {
+		return advisorMappingGitUri;
+	}
+
+	public void setAdvisorMappingGitUri(String advisorMappingGitUri) {
+		this.advisorMappingGitUri = advisorMappingGitUri;
+	}
+
+	public String getAdvisorMappingGitPath() {
+		return advisorMappingGitPath;
+	}
+
+	public void setAdvisorMappingGitPath(String advisorMappingGitPath) {
+		this.advisorMappingGitPath = advisorMappingGitPath;
 	}
 }

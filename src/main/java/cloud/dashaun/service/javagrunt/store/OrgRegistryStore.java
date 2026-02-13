@@ -9,6 +9,10 @@ public interface OrgRegistryStore {
 
 	void setOrgStatus(String org, OrgStatus status);
 
+	void setInstallationId(String org, long installationId);
+
+	Long getInstallationId(String org);
+
 	List<String> listOrgs();
 
 	List<String> listRepos(String org);

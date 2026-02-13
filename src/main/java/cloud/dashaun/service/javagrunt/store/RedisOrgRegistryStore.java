@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class RedisOrgRegistryStore implements OrgRegistryStore {
 	private static final String ORGS_KEY = "javagrunt:orgs";
+	private static final String INSTALLATION_KEY = "javagrunt:installations";
 	private final StringRedisTemplate redisTemplate;
 
 	public RedisOrgRegistryStore(StringRedisTemplate redisTemplate) {
@@ -31,6 +32,24 @@ public class RedisOrgRegistryStore implements OrgRegistryStore {
 	@Override
 	public void setOrgStatus(String org, OrgStatus status) {
 		redisTemplate.opsForHash().put(ORGS_KEY, org, status.name().toLowerCase());
+	}
+
+	@Override
+	public void setInstallationId(String org, long installationId) {
+		redisTemplate.opsForHash().put(INSTALLATION_KEY, org, String.valueOf(installationId));
+	}
+
+	@Override
+	public Long getInstallationId(String org) {
+		Object value = redisTemplate.opsForHash().get(INSTALLATION_KEY, org);
+		if (value == null) {
+			return null;
+		}
+		try {
+			return Long.parseLong(String.valueOf(value));
+		} catch (NumberFormatException ex) {
+			return null;
+		}
 	}
 
 	@Override

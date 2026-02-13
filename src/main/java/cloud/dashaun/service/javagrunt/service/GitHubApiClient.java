@@ -3,6 +3,7 @@ package cloud.dashaun.service.javagrunt.service;
 import cloud.dashaun.service.javagrunt.config.GitHubAppProperties;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.type.CollectionType;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -11,6 +12,7 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Base64;
+import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -119,6 +121,35 @@ public class GitHubApiClient {
 		sendJson(request);
 	}
 
+	public List<PullRequestInfo> listOpenPullRequests(String owner, String repo, String token) {
+		HttpRequest request = baseRequest("/repos/" + owner + "/" + repo + "/pulls?state=open&per_page=100", token)
+				.GET()
+				.build();
+		JsonNode response = sendJson(request);
+		if (!response.isArray()) {
+			return List.of();
+		}
+		CollectionType type = objectMapper.getTypeFactory().constructCollectionType(List.class, PullRequestInfo.class);
+		return objectMapper.convertValue(response, type);
+	}
+
+	public void closePullRequest(String owner, String repo, long number, String token) {
+		String payload = objectMapper.createObjectNode()
+				.put("state", "closed")
+				.toString();
+		HttpRequest request = baseRequest("/repos/" + owner + "/" + repo + "/pulls/" + number, token)
+				.method("PATCH", HttpRequest.BodyPublishers.ofString(payload))
+				.build();
+		sendJson(request);
+	}
+
+	public void deleteBranch(String owner, String repo, String branch, String token) {
+		HttpRequest request = baseRequest("/repos/" + owner + "/" + repo + "/git/refs/heads/" + branch, token)
+				.DELETE()
+				.build();
+		sendOptionalJson(request);
+	}
+
 	private HttpRequest.Builder baseRequest(String path, String token) {
 		return HttpRequest.newBuilder()
 				.uri(apiUri(path))
@@ -189,5 +220,9 @@ public class GitHubApiClient {
 
 	public String buildBranchName() {
 		return "javagrunt/ci-" + Instant.now().toString().replace(":", "").replace("-", "").replace("T", "").split("\\.")[0];
+	}
+
+	public record PullRequestInfo(long number, String title, String created_at, Head head) {
+		public record Head(String ref) {}
 	}
 }
